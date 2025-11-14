@@ -1,0 +1,229 @@
+<mat-toolbar class="app-toolbar" color="primary">
+  <mat-icon>play_circle</mat-icon>
+  <span class="brand">InnovaTube</span>
+  <span class="spacer"></span>
+  <ng-container *ngIf="currentUser$ | async as user">
+    <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+    <button mat-button class="toolbar-logout-xs" (click)="logout()" aria-label="Cerrar sesión">
+      <mat-icon>logout</mat-icon>
+      <span>Salir</span>
+    </button>
+    <button mat-icon-button class="toolbar-account" [matMenuTriggerFor]="userMenu" aria-label="Usuario">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu" xPosition="after" yPosition="below" overlapTrigger="false">
+      <button mat-menu-item disabled>
+        <mat-icon>person</mat-icon>
+        <span>{{ user.firstName }} {{ user.lastName }}</span>
+      </button>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </mat-menu>
+  </ng-container>
+</mat-toolbar>
+
+<div class="container tech-bg">
+  <mat-tab-group
+    [selectedIndex]="activeTab === 'search' ? 0 : activeTab === 'favorites' ? 1 : 2"
+    (selectedTabChange)="onTabChange($event)"
+  >
+    <mat-tab label="Buscar">
+      <form (ngSubmit)="performSearch(searchQuery)">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Buscar en YouTube</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchQuery"
+            name="searchQuery"
+            (input)="onQueryChange()"
+            [matAutocomplete]="auto"
+            placeholder="Buscar videos en YouTube..."
+          />
+          <mat-progress-spinner *ngIf="suggestLoading" matSuffix diameter="20" mode="indeterminate"></mat-progress-spinner>
+          <button *ngIf="searchQuery" mat-icon-button matSuffix type="button" (click)="clearSearch()" aria-label="Limpiar">
+            <mat-icon>close</mat-icon>
+          </button>
+          <button mat-icon-button matSuffix type="submit" aria-label="Buscar"><mat-icon>search</mat-icon></button>
+        </mat-form-field>
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="performSearch($event.option.value)">
+          <mat-option *ngFor="let s of suggestions" [value]="s">{{ s }}</mat-option>
+        </mat-autocomplete>
+      </form>
+
+      <div *ngIf="loading" class="center mt-4">
+        <mat-progress-spinner
+          diameter="32"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+      </div>
+
+      <div class="grid">
+        <div *ngFor="let v of videos" class="card">
+          <img [src]="v.thumbnail" alt="Thumb" class="thumb" />
+          <div class="card-body">
+            <div class="title">{{ v.title }}</div>
+            <div class="channel">{{ v.channelTitle }}</div>
+            <div class="actions">
+              <button mat-raised-button color="primary" (click)="openPreview(v)">Reproducir</button>
+              <button mat-icon-button [color]="isFavorite(v.id) ? 'warn' : 'accent'" [disabled]="favoriteLoadingIds.includes(v.id)" (click)="isFavorite(v.id) ? removeFavorite(v.id) : addFavorite(v)" aria-label="Favorito">
+                <mat-icon>{{ isFavorite(v.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
+              </button>
+              <button mat-icon-button [matMenuTriggerFor]="menuV" aria-label="Añadir a playlist">
+                <mat-icon>playlist_add</mat-icon>
+              </button>
+              <mat-menu #menuV="matMenu">
+                <button mat-menu-item *ngFor="let p of playlists" (click)="addToPlaylist(p.id, v)">
+                  <mat-icon>playlist_play</mat-icon>
+                  <span>{{ p.name }}</span>
+                </button>
+                <div class="menu-inline">
+                  <mat-form-field appearance="fill" class="mini" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                    <mat-label>Nueva playlist</mat-label>
+                    <input matInput [(ngModel)]="playlistName" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" />
+                  </mat-form-field>
+                  <button mat-button color="primary" (click)="$event.stopPropagation(); createPlaylist()">Crear</button>
+                </div>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+    </mat-tab>
+
+    <mat-tab label="Favoritos">
+      <mat-form-field appearance="fill" class="full">
+        <mat-label>Buscar en favoritos</mat-label>
+        <input
+          matInput
+          [(ngModel)]="favoritesQuery"
+          name="favoritesQuery"
+          (input)="onFavoritesQueryChange()"
+          placeholder="Buscar videos favoritos..."
+        />
+      </mat-form-field>
+
+      <div class="header-row">
+        <button mat-icon-button [matBadge]="filteredFavorites.length" matBadgeColor="accent" aria-label="Total favoritos">
+          <mat-icon>favorite</mat-icon>
+        </button>
+        <span>Favoritos</span>
+        <span class="spacer"></span>
+        <div *ngIf="favoritesLoading" class="center">
+          <mat-progress-spinner diameter="24" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      </div>
+
+      <div *ngIf="!favoritesLoading && filteredFavorites.length === 0" class="empty">
+        <mat-icon>search_off</mat-icon>
+        <span>No hay videos que coincidan</span>
+      </div>
+
+      <div *ngIf="filteredFavorites.length > 0" class="grid">
+        <div *ngFor="let f of filteredFavorites" class="card">
+          <img [src]="f.thumbnail" alt="Thumb" class="thumb" />
+          <div class="card-body">
+            <div class="title">{{ f.title }}</div>
+            <div class="channel">{{ f.channelTitle }}</div>
+            <div class="actions">
+              <button mat-raised-button color="primary" (click)="openPreviewFavorite(f)">Reproducir</button>
+              <button mat-icon-button color="warn" [disabled]="favoriteLoadingIds.includes(f.videoId)" (click)="removeFavorite(f.videoId)" aria-label="Quitar de favoritos">
+                <mat-icon>favorite</mat-icon>
+              </button>
+              <button mat-icon-button [matMenuTriggerFor]="menuF" aria-label="Añadir a playlist">
+                <mat-icon>playlist_add</mat-icon>
+              </button>
+              <mat-menu #menuF="matMenu">
+                <button mat-menu-item *ngFor="let p of playlists" (click)="addToPlaylist(p.id, f)">
+                  <mat-icon>playlist_play</mat-icon>
+                  <span>{{ p.name }}</span>
+                </button>
+                <div class="menu-inline">
+                  <mat-form-field appearance="fill" class="mini" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                    <mat-label>Nueva playlist</mat-label>
+                    <input matInput [(ngModel)]="playlistName" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" />
+                  </mat-form-field>
+                  <button mat-button color="primary" (click)="$event.stopPropagation(); createPlaylist()">Crear</button>
+                </div>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </mat-tab>
+
+    <mat-tab label="Playlists">
+      <div class="playlists-layout">
+        <div class="playlists-panel">
+          <div class="playlist-item" *ngFor="let p of playlists" [class.active]="p.id===selectedPlaylistId" (click)="selectPlaylist(p.id)">
+            <mat-icon>playlist_play</mat-icon>
+            <span class="name">{{ p.name }}</span>
+            <span class="count">{{ p.videos.length }}</span>
+          </div>
+          <div *ngIf="playlists.length===0" class="empty">
+            <mat-icon>playlist_remove</mat-icon>
+            <span>No hay playlists</span>
+          </div>
+        </div>
+
+        <div>
+          <div *ngIf="selectedPlaylistId && selectedPlaylistVideos().length>0" class="grid">
+            <div *ngFor="let pv of selectedPlaylistVideos()" class="card">
+              <img [src]="pv.thumbnail" alt="Thumb" class="thumb" />
+              <div class="card-body">
+                <div class="title">{{ pv.title }}</div>
+                <div class="channel">{{ pv.channelTitle }}</div>
+                <div class="actions">
+                  <button mat-raised-button color="primary" (click)="openPreviewPlaylistVideo(pv)">Reproducir</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedPlaylistId && selectedPlaylistVideos().length===0" class="empty">
+            <mat-icon>video_file</mat-icon>
+            <span>La playlist está vacía</span>
+          </div>
+
+          <div *ngIf="!selectedPlaylistId" class="empty">
+            <mat-icon>playlist_add</mat-icon>
+            <span>Selecciona una playlist para ver sus videos</span>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<div *ngIf="previewVideo" class="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>{{ previewVideo?.title }}</h3>
+      <button (click)="closePreview()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <iframe
+        [src]="videoEmbedUrl(previewVideo?.id)"
+        title="YouTube player"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <div class="modal-footer">{{ previewVideo?.channelTitle }}</div>
+  </div>
+</div>
+
+<div *ngIf="loggingOut" class="logout-overlay">
+  <mat-card class="logout-card">
+    <div class="logout-icon"><mat-icon>logout</mat-icon></div>
+    <div class="logout-text">
+      <div class="logout-title">Cerrando sesión</div>
+      <div class="logout-sub">Un momento...</div>
+    </div>
+    <mat-progress-spinner diameter="28" mode="indeterminate"></mat-progress-spinner>
+  </mat-card>
+</div>

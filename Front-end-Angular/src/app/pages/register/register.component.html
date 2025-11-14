@@ -1,0 +1,76 @@
+<div class="container">
+  <div *ngIf="loading" class="overlay"><mat-progress-spinner mode="indeterminate"></mat-progress-spinner></div>
+  <mat-card class="card">
+    <h1 class="title">Crear cuenta</h1>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid">
+      <div class="row2">
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>Nombre</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput formControlName="firstName" placeholder="Tu nombre" required />
+          <mat-error *ngIf="f['firstName'].touched && f['firstName'].hasError('required')">Obligatorio</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>Apellido</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput formControlName="lastName" placeholder="Tu apellido" required />
+          <mat-error *ngIf="f['lastName'].touched && f['lastName'].hasError('required')">Obligatorio</mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="fill" class="full">
+        <mat-label>Usuario</mat-label>
+        <mat-icon matPrefix>account_circle</mat-icon>
+        <input matInput formControlName="username" placeholder="Nombre de usuario" required />
+        <mat-error *ngIf="f['username'].touched && f['username'].hasError('required')">Obligatorio</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full">
+        <mat-label>Email</mat-label>
+        <mat-icon matPrefix>mail</mat-icon>
+        <input matInput type="email" formControlName="email" placeholder="tu@email.com" required />
+        <mat-error *ngIf="f['email'].touched && f['email'].hasError('required')">Obligatorio</mat-error>
+        <mat-error *ngIf="f['email'].touched && f['email'].hasError('email')">Email inválido</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full">
+        <mat-label>Contraseña</mat-label>
+        <mat-icon matPrefix>lock</mat-icon>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Mínimo 8 caracteres" required />
+        <button mat-icon-button matSuffix type="button" (click)="hidePassword=!hidePassword" aria-label="Mostrar/Ocultar"><mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon></button>
+        <mat-error *ngIf="f['password'].touched && f['password'].hasError('required')">Obligatorio</mat-error>
+        <mat-error *ngIf="f['password'].touched && f['password'].hasError('minlength')">Mínimo 8 caracteres</mat-error>
+      </mat-form-field>
+
+      <div class="strength">
+        <div class="strength-bar">
+          <div class="fill" [style.width.%]="strengthScore" [class.low]="strengthColor==='warn'" [class.mid]="strengthColor==='accent'" [class.high]="strengthColor==='primary'"></div>
+        </div>
+        <div class="strength-text">
+          Debe contener al menos 8 caracteres — {{ strengthLabel }}
+        </div>
+      </div>
+
+      <mat-form-field appearance="fill" class="full">
+        <mat-label>Confirmar contraseña</mat-label>
+        <mat-icon matPrefix>lock</mat-icon>
+        <input matInput [type]="hideConfirm ? 'password' : 'text'" formControlName="confirmPassword" placeholder="Repite la contraseña" required />
+        <button mat-icon-button matSuffix type="button" (click)="hideConfirm=!hideConfirm" aria-label="Mostrar/Ocultar"><mat-icon>{{ hideConfirm ? 'visibility' : 'visibility_off' }}</mat-icon></button>
+        <mat-error *ngIf="f['confirmPassword'].touched && f['confirmPassword'].hasError('required')">Obligatorio</mat-error>
+        <mat-error *ngIf="f['confirmPassword'].touched && !f['confirmPassword'].hasError('required') && !passwordsMatch()">No coincide</mat-error>
+      </mat-form-field>
+
+      <div class="recaptcha">
+        <div *ngIf="recaptchaSiteKey"><div #recaptchaElem></div></div>
+        <p *ngIf="recaptchaError" class="error">{{ recaptchaError }}</p>
+      </div>
+
+      <button mat-raised-button color="primary" class="action" [disabled]="loading || form.invalid || !passwordsMatch()">{{ loading ? 'Cargando...' : 'Crear cuenta' }}</button>
+      <p *ngIf="error" class="status error">{{ error }}</p>
+      <div class="center small">
+        <a routerLink="/login" class="link">Ya tengo cuenta</a>
+      </div>
+    </form>
+  </mat-card>
+</div>

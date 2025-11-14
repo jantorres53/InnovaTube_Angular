@@ -1,0 +1,68 @@
+<div class="page">
+  <div *ngIf="loading" class="overlay">
+    <mat-card class="loader">
+      <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    </mat-card>
+  </div>
+
+  <div class="left">
+    <div class="content">
+      <div class="hero">
+        <div class="hero-icon">
+          <mat-icon>login</mat-icon>
+        </div>
+        <h2>Bienvenido a <span class="accent">InnovaTube</span></h2>
+        <p>Inicia sesión en tu cuenta</p>
+      </div>
+
+      <mat-card class="form-card">
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="fill" class="full">
+            <mat-label>Usuario o Email</mat-label>
+            <mat-icon matPrefix>mail</mat-icon>
+            <input matInput formControlName="login" placeholder="Ingresa tu usuario o email" required />
+            <mat-error *ngIf="f['login'].touched && f['login'].hasError('required')">Este campo es obligatorio</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="full">
+            <mat-label>Contraseña</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Ingresa tu contraseña" required />
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" aria-label="Mostrar/Ocultar contraseña"><mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon></button>
+            <mat-hint>Debe tener al menos 6 caracteres</mat-hint>
+            <mat-error *ngIf="f['password'].touched && f['password'].hasError('required')">Este campo es obligatorio</mat-error>
+            <mat-error *ngIf="f['password'].touched && f['password'].hasError('minlength')">Mínimo 6 caracteres</mat-error>
+          </mat-form-field>
+
+          <div class="row between">
+            <a routerLink="/forgot-password" class="link">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <div class="recaptcha">
+            <div *ngIf="recaptchaSiteKey"><div #recaptchaElem></div></div>
+            <p *ngIf="recaptchaError" class="error">{{ recaptchaError }}</p>
+            <button type="button" mat-button color="primary" (click)="retryRecaptcha()">Reintentar reCAPTCHA</button>
+          </div>
+
+          <button mat-raised-button color="primary" class="full" [disabled]="loading || form.invalid">{{ loading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}</button>
+          <p *ngIf="error" class="center error">{{ error }}</p>
+        </form>
+
+        <div class="center small">
+          <span>¿No tienes una cuenta?</span>
+          <a routerLink="/register" class="link">Regístrate aquí</a>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="right">
+    <mat-card class="image-card">
+      <img [src]="illustrationSrc" alt="Video Tutorial Platform" />
+      <mat-card-content>
+        <h3>Aprende con los mejores</h3>
+        <p>Accede a miles de tutoriales en video y potencia tu aprendizaje con contenido de calidad</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

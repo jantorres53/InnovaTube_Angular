@@ -1,0 +1,19 @@
+
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  line-height: 1.5;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.animate-section-enter { animation: sectionEnter 280ms ease both; }
+@keyframes sectionEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Ajustes Material globales */
+.form-card mat-form-field { display: block; margin-bottom: 12px; }
+.mat-mdc-form-field { width: 100%; }

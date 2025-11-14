@@ -1,4 +1,4 @@
-Aplicación compuesta por un Frontend en Angular y un Backend en Node.js/Express. Este README describe características, librerías usadas, tecnologías y cómo ejecutar ambos proyectos en desarrollo y producción. Ignora cualquier otro frontend (por ejemplo, React); este documento cubre únicamente Angular + Express.
+Proyecto con frontend Angular y backend Node.js/Express. El frontend usa Angular Material y el backend autentica con JWT. Aquí encontrarás lo necesario para levantar ambos en desarrollo y producción.
 
 ## Visión General
 - Frontend Angular: interfaz para autenticación, búsqueda y reproducción de videos, favoritos y playlists. UI responsiva con Angular Material y protección con reCAPTCHA.
@@ -20,12 +20,11 @@ Aplicación compuesta por un Frontend en Angular y un Backend en Node.js/Express
 - Indicadores: spinner de carga, mensajes de error de credenciales
 
 ### Librerías y Dependencias
-- `@angular/*` 17.x (core, router, forms, animations, material)
-- `rxjs` 7.8.x
-- `zone.js` 0.14.x
-- `@angular/material` 17.3.x
+- `@angular/*` (core, router, forms, animations)
+- `@angular/material`
+- `rxjs`, `zone.js`
 - Dev tooling: `@angular/cli`, `karma`, `jasmine`
-- Opcionales presentes: `tailwindcss` (no requerido para correr, estilos base en CSS)
+- Estilos: Angular Material y CSS
 
 ### Scripts
 - `npm start`: desarrollo (`ng serve` en puerto 4200)
@@ -34,9 +33,10 @@ Aplicación compuesta por un Frontend en Angular y un Backend en Node.js/Express
 - `npm run serve:ssr:Front-end-Angular`: ejecutar bundle SSR generado
 
 ### Configuración
-- Archivo `src/environments/environment.ts` (y `environment.development.ts`) debe incluir:
-  - `apiUrl`: URL base del backend (ej. `http://localhost:5000`)
-  - `recaptchaSiteKey`: clave de sitio de Google reCAPTCHA
+- Las variables del frontend se ubican en `Front-end-Angular/src/environments/`.
+  - Edita `environment.ts` y `environment.development.ts` para definir:
+    - `apiUrl`: URL base del backend (ej. `http://localhost:5000`)
+    - `recaptchaSiteKey`: clave de sitio de Google reCAPTCHA
 - `index.html` incluye el script de reCAPTCHA: `https://www.google.com/recaptcha/api.js`
 
 ### Ubicaciones Clave
@@ -63,7 +63,7 @@ Aplicación compuesta por un Frontend en Angular y un Backend en Node.js/Express
 - Configuración: dotenv
 
 ### Características Principales
-- Autenticación: registro, login, logout, perfil (`/api/auth/*`)
+- Autenticación basada en JWT: registro, login, logout, perfil (`/api/auth/*`)
 - Sesiones: revocación y verificación de JWT y sesiones persistidas
 - YouTube: endpoint de búsqueda (`/api/videos/search`) proxy hacia API de YouTube
 - Salud: `GET /health`

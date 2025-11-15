@@ -137,13 +137,6 @@ back-end/
 - Configura `apiUrl` del frontend apuntando al backend.
 - Verifica reCAPTCHA: en frontend configura `recaptchaSiteKey`, en backend `RECAPTCHA_SECRET_KEY`.
 
-## Pruebas
-- Frontend: `npm test` en `Front-end-Angular` (Karma/Jasmine)
-- Backend: `node test-api.js` o `ts-node test-api.ts` en `back-end` para pruebas rápidas de endpoints
-
 ## Producción
 - Backend: `npm run build` y `npm start` (usa `.env` de producción)
 - Frontend: `npm run build` y sirve el contenido `dist/front-end-angular` en tu hosting preferido; opcionalmente usa el script SSR.
-
-## Licencia
-- Proyecto educativo/demo. Ajusta licencias y secretos antes de desplegar públicamente.
